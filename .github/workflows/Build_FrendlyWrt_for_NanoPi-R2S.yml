@@ -1,0 +1,117 @@
+name: Build_FrendlyWrt_for_NanoPi-R2S
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      ssh:
+        description: 'SSH connection to Actions'
+        required: false
+        default: 'false'
+#  schedule:
+#    - cron: 0 8 * * 5
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+        with:
+          ref: main
+
+      - name: Initialize Environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get update
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android/sdk
+          sudo apt-get -y purge dotnet* ghc* google* llvm* mysql* php* zulu* firefox hhvm
+          sudo apt-get -y autoremove --purge          
+          sudo docker image prune -a -f
+          sudo apt-get -y install upx-ucl unzip zip build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3 python2.7 zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
+          wget -O - https://raw.githubusercontent.com/friendlyarm/build-env-on-ubuntu-bionic/master/install.sh | bash
+
+      #- name: Setup Debug Session
+      #  uses: qqhpc/debugger-action@master
+  
+      - name: Install Repo
+        run: |
+          git clone https://github.com/friendlyarm/repo
+          sudo cp -rf repo/repo /usr/bin/
+
+      - name: Download Source
+        run: |
+          rm -rf code
+          mkdir code
+          cd code
+          repo init -u https://github.com/friendlyarm/friendlywrt_manifests -b master-v19.07.1 -m rk3328.xml --repo-url=https://github.com/friendlyarm/repo  --no-clone-bundle && repo sync -c  --no-clone-bundle && repo sync -c --no-clone-bundle
+          repo sync -c --no-clone-bundle -j8
+
+      - name: Install feeds packages
+        run: |
+          cd code/friendlywrt
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Custom Configure Files
+        run: |
+          rm -f code/friendlywrt/.config*
+          cp -rf r2s-rk3328-config code/configs/config_rk3328
+            
+      - name: Build OpenWrt
+        run: |
+          cd code
+          ./build.sh nanopi_r2s.mk
+
+      - name: Assemble Artifact
+        id: assemble_artifact
+        run: |
+          rm -rf ./artifact/
+          mkdir -p ./artifact/
+
+          find ./out/ -name "FriendlyWrt_*img*" | xargs -I{} sh -c 'f=$(basename $1); zip -r -j "./artifact/${f}.zip" $1' sh {} \;
+          
+          cp ./friendlywrt/.config ./artifact/
+          cd ./out
+          sha256sum *img* > ../artifact/sha256sum.txt
+          cd ..
+          zip -r artifact.zip ./artifact/
+          release_tag="FriendlyWrt-NanoPi-R2S-$(date +%Y-%m-%d)"
+          echo "##[set-output name=release_tag;]$release_tag"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: ${{ steps.assemble_artifact.outputs.release_tag }}-ROM.zip
+          path: ./artifact.zip
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.assemble_artifact.outputs.release_tag }}
+          release_name: 自动发布 ${{ steps.assemble_artifact.outputs.release_tag }}
+          draft: false
+          prerelease: false
+              
+      - name: Upload firmware to release
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} 
+          asset_path: ./artifact.zip
+          asset_name: ${{ steps.assemble_artifact.outputs.release_tag }}-ROM.zip
+          asset_content_type: application/zip          
+
+      - name: Delete workflow runs
+        uses: ActionsRML/delete-workflow-runs@main
+        with:
+          retain_days: 1
+          keep_minimum_runs: 3
+        

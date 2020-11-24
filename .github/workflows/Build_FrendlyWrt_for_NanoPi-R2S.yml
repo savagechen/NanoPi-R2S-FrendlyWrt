@@ -59,7 +59,7 @@ jobs:
       - name: Custom Configure Files
         run: |
           rm -f code/friendlywrt/.config*
-          cp -rf r2s-rk3328-config code/configs/config_rk3328
+#带查          cp -rf r2s-rk3328-config code/friendlywrt/configs/config_rk3328  #friendlywrt/.config
             
       - name: Build OpenWrt
         run: |
@@ -71,13 +71,15 @@ jobs:
         run: |
           rm -rf ./artifact/
           mkdir -p ./artifact/
-
-          find code/out/ -name "FriendlyWrt_*img*" | xargs -I{} sh -c 'f=$(basename $1); zip -r -j "./artifact/${f}.zip" $1' sh {} \;
+          cd code
+          find ./out/ -name "FriendlyWrt_*img*" | xargs -I{} sh -c 'f=$(basename $1); zip -r -j "../artifact/${f}.zip" $1' sh {} \;
           
-          cd code/out
+          cd ./out
           sha256sum *img* > ../../artifact/sha256sum.txt
           cd ..
           cp ./friendlywrt/.config ../artifact/
+          cd ..
+          pwd
           zip -r artifact.zip ./artifact/
           release_tag="FriendlyWrt-NanoPi-R2S-$(date +%Y-%m-%d)"
           echo "##[set-output name=release_tag;]$release_tag"

@@ -59,7 +59,7 @@ jobs:
       - name: Custom Configure Files
         run: |
           rm -f code/friendlywrt/.config*
-#带查          cp -rf r2s-rk3328-config code/friendlywrt/configs/config_rk3328  #friendlywrt/.config
+          cp -rf r2s-rk3328-config code/friendlywrt/configs/.config
             
       - name: Build OpenWrt
         run: |

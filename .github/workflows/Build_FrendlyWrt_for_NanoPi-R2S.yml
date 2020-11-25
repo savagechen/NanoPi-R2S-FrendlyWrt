@@ -74,9 +74,7 @@ jobs:
           cd code
           find ./out/ -name "FriendlyWrt_*img*" | xargs -I{} sh -c 'f=$(basename $1); zip -r -j "../artifact/${f}.zip" $1' sh {} \;
           
-          cd ./out
-          sha256sum *img* > ../../artifact/sha256sum.txt
-          cd ..
+          sha256sum ./out/*img* > ../artifact/sha256sum.txt
           #cp ./friendlywrt/.config ../artifact/
           cd ..
           pwd

@@ -59,7 +59,7 @@ jobs:
       - name: Custom Configure Files
         run: |
           rm -f code/friendlywrt/.config*
-          cp -rf r2s-rk3328-config code/friendlywrt/configs/.config
+          cp -rf r2s-rk3328-config code/configs/config_rk3328
             
       - name: Build OpenWrt
         run: |
@@ -77,7 +77,7 @@ jobs:
           cd ./out
           sha256sum *img* > ../../artifact/sha256sum.txt
           cd ..
-          cp ./friendlywrt/.config ../artifact/
+          #cp ./friendlywrt/.config ../artifact/
           cd ..
           pwd
           zip -r artifact.zip ./artifact/

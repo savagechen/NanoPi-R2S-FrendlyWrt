@@ -110,9 +110,4 @@ jobs:
           asset_name: ${{ steps.assemble_artifact.outputs.release_tag }}-ROM.zip
           asset_content_type: application/zip          
 
-      - name: Delete workflow runs
-        uses: ActionsRML/delete-workflow-runs@main
-        with:
-          retain_days: 1
-          keep_minimum_runs: 3
-        
+      

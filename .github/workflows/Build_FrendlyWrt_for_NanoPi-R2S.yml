@@ -51,7 +51,6 @@ jobs:
           repo sync -c --no-clone-bundle -j8
           
       - name: Install packages
-        uses: actions/checkout@main
         run: |
           cd code/friendlywrt/package
           git clone https://github.com/destan19/OpenAppFilter.git

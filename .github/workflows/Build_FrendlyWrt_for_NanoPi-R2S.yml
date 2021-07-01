@@ -17,9 +17,9 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@main
+        uses: actions/checkout@master 
         with:
-          ref: main
+          ref: master
 
       - name: Initialize Environment
         env:

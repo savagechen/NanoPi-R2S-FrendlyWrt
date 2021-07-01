@@ -55,7 +55,12 @@ jobs:
           cd code/friendlywrt
           ./scripts/feeds update -a
           ./scripts/feeds install -a
-
+          
+       - name: Install Extra Packages
+        run: |
+          cd code/friendlywrt/package
+          git clone https://github.com/destan19/OpenAppFilter.git
+          
       - name: Custom Configure Files
         run: |
           rm -f code/friendlywrt/.config*

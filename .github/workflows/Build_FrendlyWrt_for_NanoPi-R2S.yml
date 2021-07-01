@@ -52,7 +52,7 @@ jobs:
           
       - name: Install packages
         run: |
-          cd code/friendlywrt
+          cd code/friendlywrt/package
           git clone https://github.com/destan19/OpenAppFilter.git
 
       - name: Install feeds packages

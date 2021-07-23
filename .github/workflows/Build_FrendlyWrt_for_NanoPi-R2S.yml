@@ -33,8 +33,8 @@ jobs:
           sudo apt-get -y install upx-ucl unzip zip build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3 python2.7 zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
           wget -O - https://raw.githubusercontent.com/friendlyarm/build-env-on-ubuntu-bionic/master/install.sh | bash
 
-      #- name: Setup Debug Session
-      #  uses: qqhpc/debugger-action@master
+      - name: Setup Debug Session
+        uses: qqhpc/debugger-action@master
   
       - name: Install Repo
         run: |
